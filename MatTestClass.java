@@ -22,13 +22,17 @@ import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.Size;
 import org.bytedeco.javacpp.opencv_dnn;
 import static org.bytedeco.javacpp.opencv_dnn.blobFromImage;
+import org.bytedeco.javacpp.opencv_imgcodecs;
+
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imdecode;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.rectangle;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.opencv.core.CvType;
+import org.opencv.highgui.Highgui;
 
 /**
  *
@@ -51,10 +55,10 @@ public class MatTestClass {
             int height = bImage.getHeight();
             System.out.println("Width: " + width + " Height: " + height);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ImageIO.write(bImage, "jpeg", bos);
+            ImageIO.write(bImage, "jpg", bos);
             String base64String = Base64.encode(bos.toByteArray());
             data = Base64.decode(base64String);
-            imageMat = new Mat(new Size(width,height), CvType.CV_8UC4, new BytePointer(data));
+            imageMat = imdecode(new Mat(new Size(width, height), CvType.CV_8UC4, new BytePointer(data)), opencv_imgcodecs.CV_LOAD_IMAGE_COLOR);
 //            imageMat.data().put(data);
 //            ByteArrayInputStream bis = new ByteArrayInputStream(data);
 //            BufferedImage bImage2 = ImageIO.read(bis);
@@ -62,8 +66,8 @@ public class MatTestClass {
 //            System.out.println("image created");
 //            imageMat = new Mat ();
 //            System.out.println(imageMat.toString());
-//            detectAndDraw(imageMat);
-            imwrite("output.png",imageMat);
+            detectAndDraw2(imageMat);
+            imwrite("output.jpg", imageMat);
             bos.flush();
             bos.close();
 
@@ -79,6 +83,7 @@ public class MatTestClass {
         //create a 4-dimensional blob from image with NCHW (Number of images in the batch -for training only-, Channel, Height, Width) dimensions order,
         //for more detailes read the official docs at https://docs.opencv.org/trunk/d6/d0f/group__dnn.html#gabd0e76da3c6ad15c08b01ef21ad55dd8
         Mat blob = blobFromImage(image, 1.0, new opencv_core.Size(300, 300), new opencv_core.Scalar(104.0, 177.0, 123.0, 0), false, false);
+        imwrite("blob.png", blob);
 
         net.setInput(blob);//set the input to network model
         Mat output = net.forward();//feed forward the input to the netwrok to get the output matrix
@@ -118,5 +123,15 @@ public class MatTestClass {
                 rectangle(image, new opencv_core.Rect(new opencv_core.Point((int) tx, (int) ty), new opencv_core.Point((int) bx, (int) by)), new opencv_core.Scalar(255, 0, 0, 0));//print blue rectangle 
             }
         }
+    }
+
+    private static void detectAndDraw2(Mat image) {
+        resize(image, image, new opencv_core.Size(300, 300));//resize the image to match the input size of the model
+
+        //create a 4-dimensional blob from image with NCHW (Number of images in the batch -for training only-, Channel, Height, Width) dimensions order,
+        //for more detailes read the official docs at https://docs.opencv.org/trunk/d6/d0f/group__dnn.html#gabd0e76da3c6ad15c08b01ef21ad55dd8
+        Mat blob = blobFromImage(image, 1.0, new opencv_core.Size(300, 300), new opencv_core.Scalar(104.0, 177.0, 123.0, 0), false, false);
+        imwrite("blob.png", blob);
+        net.setInput(blob);
     }
 }
