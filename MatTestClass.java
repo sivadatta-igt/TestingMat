@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.indexer.FloatIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.CV_32F;
@@ -53,8 +54,8 @@ public class MatTestClass {
             ImageIO.write(bImage, "jpeg", bos);
             String base64String = Base64.encode(bos.toByteArray());
             data = Base64.decode(base64String);
-            imageMat = new Mat(new Size(width,height), CvType.CV_8UC4);
-            imageMat.data().put(data);
+            imageMat = new Mat(new Size(width,height), CvType.CV_8UC4, new BytePointer(data));
+//            imageMat.data().put(data);
 //            ByteArrayInputStream bis = new ByteArrayInputStream(data);
 //            BufferedImage bImage2 = ImageIO.read(bis);
 //            ImageIO.write(bImage2, "jpg", new File("output.jpg"));
