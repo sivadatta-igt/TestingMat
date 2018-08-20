@@ -7,6 +7,7 @@ package facerecognitiontest;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import org.bytedeco.javacpp.indexer.FloatIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import static org.bytedeco.javacpp.opencv_core.CV_32F;
 import org.bytedeco.javacpp.opencv_core.Mat;
+import org.bytedeco.javacpp.opencv_core.Size;
 import org.bytedeco.javacpp.opencv_dnn;
 import static org.bytedeco.javacpp.opencv_dnn.blobFromImage;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
@@ -25,6 +27,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.rectangle;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.opencv.core.CvType;
 
 /**
  *
@@ -43,17 +46,26 @@ public class MatTestClass {
     public static void main(String[] args) {
         try {
             BufferedImage bImage = ImageIO.read(new File("input.jpg"));
+            int width = bImage.getWidth();
+            int height = bImage.getHeight();
+            System.out.println("Width: " + width + " Height: " + height);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(bImage, "jpeg", bos);
-            String base64String=Base64.encode(bos.toByteArray());
+            String base64String = Base64.encode(bos.toByteArray());
             data = Base64.decode(base64String);
-            imageMat = new Mat(data);
-            System.out.println(imageMat.toString());
-            detectAndDraw(imageMat);
+            imageMat = new Mat(new Size(width,height), CvType.CV_8UC4);
+            imageMat.data().put(data);
+//            ByteArrayInputStream bis = new ByteArrayInputStream(data);
+//            BufferedImage bImage2 = ImageIO.read(bis);
+//            ImageIO.write(bImage2, "jpg", new File("output.jpg"));
+//            System.out.println("image created");
+//            imageMat = new Mat ();
+//            System.out.println(imageMat.toString());
+//            detectAndDraw(imageMat);
             imwrite("output.png",imageMat);
             bos.flush();
             bos.close();
-            
+
         } catch (IOException ex) {
             Logger.getLogger(MatTestClass.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -61,7 +73,7 @@ public class MatTestClass {
 
     private static void detectAndDraw(Mat image) {//detect faces and draw a blue rectangle arroung each face
 
-//        resize(image, image, new opencv_core.Size(300, 300));//resize the image to match the input size of the model
+        resize(image, image, new opencv_core.Size(300, 300));//resize the image to match the input size of the model
 
         //create a 4-dimensional blob from image with NCHW (Number of images in the batch -for training only-, Channel, Height, Width) dimensions order,
         //for more detailes read the official docs at https://docs.opencv.org/trunk/d6/d0f/group__dnn.html#gabd0e76da3c6ad15c08b01ef21ad55dd8
